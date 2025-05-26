@@ -27,7 +27,7 @@ pip install ai_manager
 ### Install from Source
 
 ```bash
-git clone https://github.com/yourusername/ai_manager.git
+git clone https://github.com/watkinslabs/ai_manager.git
 cd ai_manager
 make setup-dev
 ```

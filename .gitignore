@@ -3,3 +3,6 @@
 *.tar
 *.zip
 *.flort.txt
+*.egg-info
+dist
+*.lock

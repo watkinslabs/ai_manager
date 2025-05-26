@@ -11,7 +11,7 @@ readme_path = Path(__file__).parent / "README.md"
 long_description = readme_path.read_text() if readme_path.exists() else ""
 
 setup(
-    name="ai_manager",
+    name="wl_ai_manager",
     version="0.1.0",
     description="Python module providing unified access to OpenAI's chat, text-to-speech, and transcription APIs",
     long_description=long_description,
