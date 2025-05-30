@@ -1,0 +1,9 @@
+module:
+-   name:
+    description:
+    usecase:
+    database:
+    service:
+    hooks:
+    routes:
+

@@ -5,6 +5,11 @@ name = "pypi"
 
 [packages]
 setuptools = "*"
+wl-config-manager = "*"
+wl-version-manager = "*"
+soundfile = "*"
+openai = "*"
+jsonschema = "*"
 
 [dev-packages]
 

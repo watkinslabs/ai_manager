@@ -10,9 +10,11 @@ from pathlib import Path
 readme_path = Path(__file__).parent / "README.md"
 long_description = readme_path.read_text() if readme_path.exists() else ""
 
+from wl_version_manager import VersionManager
+
 setup(
     name="wl_ai_manager",
-    version="0.1.0",
+    version=VersionManager.get_version(),
     description="Python module providing unified access to OpenAI's chat, text-to-speech, and transcription APIs",
     long_description=long_description,
     long_description_content_type="text/markdown",

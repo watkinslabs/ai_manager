@@ -1,266 +1,425 @@
 # AI Manager
 
-Python module providing unified access to OpenAI's chat, text-to-speech, and transcription APIs with template-based prompt management.
+A comprehensive Python wrapper for OpenAI's APIs, providing chat completions, text-to-speech, transcription, and structured response validation with automatic retry logic.
 
 ## Features
 
-- **Chat Completions** - Generate responses using OpenAI's chat models
-- **Text-to-Speech** - Convert text to audio using OpenAI's TTS API
-- **Audio Transcription** - Transcribe audio files using Whisper
-- **Template System** - File-based prompt templates with variable substitution
-- **Comprehensive Logging** - Built-in logging for debugging and monitoring
+- **Chat Completions**: Clean interface for OpenAI's chat API with template-based prompts
+- **Schema Validation**: Automatic JSON/YAML validation with configurable retry logic
+- **Text-to-Speech**: Generate speech from text with customizable voices
+- **Transcription**: Convert audio to text using Whisper API
+- **Template System**: Flexible prompt management with system/user message support
+- **Error Handling**: Robust error handling with detailed logging
 
 ## Installation
 
-### Prerequisites (Fedora/CentOS)
-
 ```bash
-dnf install python3-pip pipenv
-```
-
-### Install from PyPI
-
-```bash
-pip install ai_manager
-```
-
-### Install from Source
-
-```bash
-git clone https://github.com/watkinslabs/ai_manager.git
-cd ai_manager
-make setup-dev
+pip install openai jsonschema pyyaml soundfile wl-config-manager
 ```
 
 ## Quick Start
 
+### 1. Configuration
+
+Create a YAML configuration file:
+
+```yaml
+# config.yaml
+
+# OpenAI API settings
+openai:
+  api_key: "${OPENAI_API_KEY}"
+  organization_id: "${OPENAI_ORG_ID}"
+  chat_model: "gpt-4o-mini"
+  tts_model: "tts-1"
+  tts_voice: "alloy"
+  whisper_model: "whisper-1"
+
+# Directory paths
+prompt_folder: "prompts"
+schema_folder: "schemas"
+output_dir: "output"
+temp_dir: "/tmp"
+
+# Validation settings
+max_validation_retries: 3
+sample_rate: 44100
+
+# Custom template (optional)
+schema_prompt_template: |
+  {base_prompt}
+
+  Return response in JSON or YAML format following this example:
+  {schema_content}
+
+  Respond with only structured data, no additional text.
+```
+
 ```python
+from wl_config_manager import ConfigManager
 from ai_manager import AIManager
 
-# Initialize with configuration
-ai = AIManager(config)
-
-# Chat completion
-response = ai.chat("greeting", {"name": "John"})
-print(response)
-
-# Generate speech
-speech_path = ai.generate_speech("Hello world!", output_path="hello.wav")
-
-# Transcribe audio
-text = ai.transcribe_audio(audio_path="recording.wav")
-print(text)
+# Load configuration
+config_manager = ConfigManager("config.yaml")
+ai_manager = AIManager(config_manager.config)
 ```
 
-## Configuration
-
-Your config object must include:
+### 2. Basic Chat
 
 ```python
-class Config:
-    class openai:
-        api_key = "sk-..."
-        organization_id = "org-..."
-        chat_model = "gpt-4"
-        tts_voice = "alloy"
-        tts_model = "tts-1"
-        whisper_model = "whisper-1"
-    
-    prompt_folder = "/path/to/prompts"
-    output_dir = "/path/to/output"
-    temp_dir = "/tmp"
-    sample_rate = 44100
+# Simple chat
+response = ai_manager.chat('get_weather', {'city': 'Boston'})
+print(response)  # "The weather in Boston is sunny with 75°F"
 ```
 
-## Prompt Templates
+### 3. Structured Responses with Validation
 
-Create `.txt` files in your prompt folder:
+```python
+# Chat with automatic validation and retry
+user_data = ai_manager.chat('create_user', {
+    'name': 'Alice',
+    'email': 'alice@example.com'
+}, validate=True)
 
-### Simple Prompts
+print(user_data)  # {'id': 123, 'name': 'Alice', 'email': 'alice@example.com', 'active': True}
 ```
-# prompts/greeting.txt
-Hello {name}! How can I help you today?
+
+## File Structure
+
+```
+your_project/
+├── prompts/
+│   ├── get_weather.txt              # Regular prompt
+│   ├── create_user.txt              # Structured prompt
+│   ├── complex_task.system.txt      # System message
+│   └── complex_task.user.txt        # User message
+├── schemas/
+│   ├── create_user.schema.txt       # JSON/YAML example for create_user.txt
+│   └── complex_task.schema.txt      # Schema for complex_task
+└── output/
+    └── speech/                      # Generated speech files
+```
+
+## Prompt Files
+
+### Regular Prompt (`prompts/get_weather.txt`)
+```
+Get the current weather for {city}. Include temperature, conditions, and any weather alerts.
+```
+
+### Structured Prompt (`prompts/create_user.txt`)
+```
+Create a new user account with the following details:
+- Name: {name}
+- Email: {email} 
+- Role: {role}
 ```
 
 ### System/User Prompts
 ```
-# prompts/assistant.system.txt
-You are a helpful AI assistant.
+# prompts/analyze_data.system.txt
+You are a expert data analyst. Provide clear, actionable insights.
 
-# prompts/assistant.user.txt
-Please help me with: {task}
+# prompts/analyze_data.user.txt  
+Analyze this dataset: {data}
+Focus on trends, anomalies, and recommendations.
 ```
 
-Use `{variable}` placeholders for dynamic content.
+## Schema Files
+
+Schema files provide examples of the expected output format for structured prompts.
+
+### JSON Schema (`schemas/create_user.schema.txt`)
+```json
+{
+  "id": 12345,
+  "name": "John Doe",
+  "email": "john@example.com", 
+  "role": "user",
+  "active": true,
+  "created_at": "2025-05-30T12:00:00Z"
+}
+```
+
+### YAML Schema (`schemas/analyze_data.schema.txt`)
+```yaml
+analysis:
+  summary: "Data shows positive trend over 6 months"
+  metrics:
+    - name: "average_value"
+      value: 42.5
+    - name: "total_records"
+      value: 1250
+  insights:
+    - "Key finding 1"
+    - "Recommendation 2" 
+  confidence: 0.85
+```
 
 ## API Reference
 
-### AIManager Class
-
-#### `__init__(config)`
-Initialize AI Manager with configuration object.
-
-#### `chat(prompt_name, data={}, model=None)`
-Generate chat completion using template.
-
-**Parameters:**
-- `prompt_name` - Name of prompt template
-- `data` - Dictionary for variable substitution
-- `model` - Override default chat model
-
-**Returns:** Generated text or None on failure
-
-#### `generate_speech(text, voice=None, model=None, output_path=None)`
-Convert text to speech.
-
-**Parameters:**
-- `text` - Text to convert
-- `voice` - Voice to use (defaults to config)
-- `model` - TTS model (defaults to config)
-- `output_path` - Output WAV file path
-
-**Returns:** Output path or None on failure
-
-#### `transcribe_audio(audio_data=None, audio_path=None)`
-Transcribe audio using Whisper.
-
-**Parameters:**
-- `audio_data` - Raw audio data or numpy array
-- `audio_path` - Path to audio file
-
-**Returns:** Transcribed text or None on failure
-
-### Standalone Functions
+### AIManager.chat()
 
 ```python
-from ai_manager import chat, generate_speech, transcribe_audio
-
-# Direct function calls
-text = chat("prompt_name", {"key": "value"}, model, client, prompts)
-path = generate_speech("Hello", "alloy", "tts-1", "out.wav", client)
-result = transcribe_audio(audio_data=data, client=client)
+def chat(self, prompt_name, data={}, model=None, validate=False):
+    """
+    Generate chat completion with optional validation.
+    
+    Args:
+        prompt_name (str): Name of prompt file (without .txt)
+        data (dict): Variables to format into prompt template
+        model (str): OpenAI model to use (optional)
+        validate (bool): Enable structured response validation
+        
+    Returns:
+        str|dict: Raw text response or parsed structured data
+        
+    Raises:
+        None: Returns error dict on failure when validate=True
+    """
 ```
 
-## Development
-
-### Setup Development Environment
-
-```bash
-make setup-dev
-```
-
-### Available Make Targets
-
-```bash
-make help           # Show all targets
-make build          # Build distribution packages
-make test           # Run tests
-make lint           # Run linting
-make format         # Format code with black
-make install        # Install with pipenv
-make uninstall      # Remove from pipenv
-make upload-test    # Upload to TestPyPI
-make upload-prod    # Upload to PyPI
-```
-
-### Running Tests
-
-```bash
-make test
-```
-
-### Code Formatting
-
-```bash
-make format
-make lint
-```
-
-## Examples
-
-### Basic Chat
+**Examples:**
 
 ```python
-from ai_manager import AIManager
+# Basic usage
+response = ai_manager.chat('greeting', {'name': 'Alice'})
 
-ai = AIManager(config)
+# With validation
+user = ai_manager.chat('create_user', {
+    'name': 'Bob', 
+    'email': 'bob@test.com',
+    'role': 'admin'
+}, validate=True)
 
-# Simple prompt
-response = ai.chat("summarize", {
-    "text": "Long article content here..."
-})
-
-# System/user prompt
-response = ai.chat("code_review", {
-    "language": "python",
-    "code": "def hello(): pass"
-})
-```
-
-### Text-to-Speech Pipeline
-
-```python
-# Generate speech with custom settings
-speech_file = ai.generate_speech(
-    text="Welcome to our application!",
-    voice="nova",
-    model="tts-1-hd",
-    output_path="welcome.wav"
+# Custom model
+analysis = ai_manager.chat('analyze_data', 
+    {'data': 'sales_q1.csv'}, 
+    model='gpt-4o',
+    validate=True
 )
-
-if speech_file:
-    print(f"Speech saved to: {speech_file}")
 ```
 
-### Audio Transcription
+### Other Methods
 
 ```python
-# Transcribe from file
-transcript = ai.transcribe_audio(audio_path="meeting.wav")
+# Text-to-speech
+ai_manager.generate_speech("Hello world", output_path="/path/to/speech.wav")
 
-# Transcribe from raw data
-with open("audio.wav", "rb") as f:
-    audio_data = f.read()
-    transcript = ai.transcribe_audio(audio_data=audio_data)
+# Transcription  
+text = ai_manager.transcribe_audio(audio_path="/path/to/audio.wav")
+
+# Get prompts with schemas
+schema_prompts = ai_manager.get_schema_prompts()
+
+# Check if prompt has schema
+if ai_manager.has_schema_for_prompt('create_user'):
+    # Validation available
+    pass
+```
+
+## Validation and Retry Logic
+
+When `validate=True`:
+
+1. **Prompt Enhancement**: Automatically combines your prompt with schema example
+2. **Response Sanitization**: Removes common LLM wrapper text ("Here's the JSON:", code blocks, etc.)
+3. **Format Detection**: Attempts to parse as JSON first, then YAML
+4. **Automatic Retry**: Retries up to `max_validation_retries` times on parsing failure
+5. **Structured Return**: Returns parsed data on success, detailed error info on failure
+
+### Success Response
+```python
+{
+    "id": 123,
+    "name": "Alice", 
+    "email": "alice@example.com",
+    "active": True
+}
+```
+
+### Failure Response
+```python
+{
+    "error": "Validation failed after all retries",
+    "attempts": 3,
+    "last_response": "The raw LLM response text",
+    "validation_result": {
+        "valid": False,
+        "errors": ["JSON error: ...", "YAML error: ..."],
+        "sanitized_response": "cleaned response"
+    },
+    "prompt_name": "create_user"
+}
+```
+
+## Configuration Options
+
+All configuration is done via YAML file loaded with WL_CONFIG_MANAGER:
+
+```yaml
+# Required OpenAI settings
+openai:
+  api_key: "${OPENAI_API_KEY}"           # API key (use env var)
+  organization_id: "${OPENAI_ORG_ID}"    # Organization ID (optional)
+  chat_model: "gpt-4o-mini"              # Chat completion model
+  tts_model: "tts-1"                     # Text-to-speech model
+  tts_voice: "alloy"                     # TTS voice
+  whisper_model: "whisper-1"             # Transcription model
+
+# Required directory paths
+prompt_folder: "prompts"                 # Prompt files directory
+schema_folder: "schemas"                 # Schema files directory (optional)
+
+# Optional settings
+output_dir: "output"                     # Output files directory
+temp_dir: "/tmp"                         # Temporary files
+max_validation_retries: 3                # Retry attempts for validation
+sample_rate: 44100                       # Audio sample rate
+
+# Custom template for combining prompts with schemas (optional)
+schema_prompt_template: |
+  {base_prompt}
+
+  Return response in JSON or YAML format following this example:
+  {schema_content}
+
+  Respond with only structured data, no additional text.
+```
+
+### Environment Variables
+
+Set your OpenAI credentials:
+
+```bash
+export OPENAI_API_KEY="your-api-key-here"
+export OPENAI_ORG_ID="your-org-id-here"  # Optional
 ```
 
 ## Error Handling
 
-All methods return `None` on failure and log errors. Always check return values:
-
-```python
-response = ai.chat("prompt", data)
-if response is None:
-    print("Chat generation failed")
-    
-speech_path = ai.generate_speech("text")
-if speech_path is None:
-    print("Speech generation failed")
-```
-
-## Logging
-
-Enable logging to see detailed information:
+The AI Manager uses Python's `logging` module for comprehensive error tracking:
 
 ```python
 import logging
 logging.basicConfig(level=logging.INFO)
+
+# Enable debug logging for detailed info
+logging.getLogger('ai_manager').setLevel(logging.DEBUG)
+```
+
+Common error scenarios:
+- Missing API keys → Initialization failure
+- Invalid prompt names → File not found errors  
+- Validation failures → Detailed error dictionaries
+- Network issues → OpenAI client exceptions
+
+## Testing
+
+Run the test suite:
+
+```bash
+# Install test dependencies
+pip install pytest pytest-mock
+
+# Run all tests
+python -m pytest tests/ -v
+
+# Run specific test category
+python -m pytest tests/test_schema_validator.py -v
+
+# Run with coverage
+python -m pytest tests/ --cov=ai_manager --cov-report=html
+```
+
+### Test Configuration
+
+Set environment variables for testing:
+
+```bash
+export OPENAI_API_KEY="your-test-key"
+export OPENAI_ORG_ID="your-test-org" 
+```
+
+## Examples
+
+### Customer Support Bot
+
+```python
+# prompts/support_response.txt
+Respond to this customer inquiry: {inquiry}
+Customer tier: {tier}
+Previous context: {context}
+
+# schemas/support_response.schema.txt  
+{
+  "response": "Thank you for contacting us...",
+  "sentiment": "positive",
+  "escalate": false,
+  "suggested_actions": ["send_followup", "update_account"],
+  "confidence": 0.9
+}
+
+# Usage
+response = ai_manager.chat('support_response', {
+    'inquiry': 'My order is delayed',
+    'tier': 'premium', 
+    'context': 'Second inquiry this month'
+}, validate=True)
+
+if response.get('escalate'):
+    escalate_to_human(response)
+```
+
+### Data Analysis Pipeline
+
+```python
+# Structured data analysis
+results = ai_manager.chat('analyze_sales', {
+    'period': 'Q1 2025',
+    'data_source': 'sales_database.csv'
+}, validate=True)
+
+# Process results
+for insight in results['analysis']['insights']:
+    send_to_dashboard(insight)
+    
+if results['analysis']['confidence'] > 0.8:
+    auto_generate_report(results)
+```
+
+### Content Generation
+
+```python
+# Generate blog post with metadata
+post = ai_manager.chat('create_blog_post', {
+    'topic': 'AI in Healthcare',
+    'target_audience': 'medical professionals',
+    'word_count': 1500
+}, validate=True)
+
+# Automatic processing
+save_to_cms(post['content'])
+schedule_publication(post['publish_date'])
+tag_with_categories(post['tags'])
 ```
 
 ## License
 
-BSD 3-Clause License - see LICENSE file for details.
+BSD 3-Clause License
 
 ## Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Make changes with tests
-4. Run `make pre-upload` to verify
-5. Submit a pull request
+2. Create feature branch (`git checkout -b feature/amazing-feature`)
+3. Add tests for new functionality
+4. Ensure all tests pass (`python -m pytest`)
+5. Commit changes (`git commit -m 'Add amazing feature'`)
+6. Push to branch (`git push origin feature/amazing-feature`)
+7. Open Pull Request
 
 ## Support
 
-- Issues: GitHub Issues
-- Documentation: This README
-- Examples: See examples/ directory
+- **Issues**: GitHub Issues for bug reports and feature requests
+- **Documentation**: This README and inline code documentation
+- **Examples**: See `examples/` directory for more use cases

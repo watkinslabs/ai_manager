@@ -1,0 +1,53 @@
+{
+  "api_design": {
+    "service_name": "User Management Service",
+    "base_url": "https://api.example.com/v1",
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/users",
+        "description": "List all users",
+        "parameters": [
+          {
+            "name": "limit",
+            "type": "integer",
+            "required": false
+          }
+        ],
+        "response_schema": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/User"
+          }
+        }
+      },
+      {
+        "method": "POST",
+        "path": "/users",
+        "description": "Create new user",
+        "request_schema": {
+          "$ref": "#/definitions/CreateUser"
+        },
+        "response_schema": {
+          "$ref": "#/definitions/User"
+        }
+      }
+    ],
+    "definitions": {
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

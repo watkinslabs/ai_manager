@@ -1,0 +1,25 @@
+{
+  "test_data": [
+    {
+      "id": 1,
+      "name": "John Doe",
+      "email": "john.doe@example.com",
+      "age": 30,
+      "department": "Engineering",
+      "active": true
+    },
+    {
+      "id": 2,
+      "name": "Jane Smith",
+      "email": "jane.smith@example.com",
+      "age": 28,
+      "department": "Marketing",
+      "active": true
+    }
+  ],
+  "metadata": {
+    "count": 2,
+    "generated_at": "2025-05-30T12:00:00Z",
+    "schema_version": "1.0"
+  }
+}

@@ -1,0 +1,16 @@
+analysis:
+  summary: "Data shows positive trend"
+  metrics:
+    - name: "average"
+      value: 42.5
+    - name: "count" 
+      value: 100
+    - name: "growth_rate"
+      value: 15.2
+  insights:
+    - "Key finding 1"
+    - "Key finding 2"
+    - "Important trend identified"
+  recommendations:
+    - "Action item 1"
+    - "Action item 2"

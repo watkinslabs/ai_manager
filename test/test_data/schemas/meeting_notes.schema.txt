@@ -1,0 +1,24 @@
+meeting:
+  title: "Weekly Team Standup"
+  date: "2025-05-30"
+  duration_minutes: 30
+  participants:
+    - name: "John Doe"
+      role: "Lead Developer"
+    - name: "Jane Smith" 
+      role: "Product Manager"
+  agenda_items:
+    - topic: "Sprint Review"
+      duration_minutes: 10
+      notes: "Completed 8 out of 10 story points"
+    - topic: "Blockers Discussion"
+      duration_minutes: 15
+      notes: "API integration issues identified"
+  action_items:
+    - task: "Fix API integration"
+      assignee: "John Doe"
+      due_date: "2025-06-01"
+    - task: "Update documentation"
+      assignee: "Jane Smith"
+      due_date: "2025-06-03"
+  next_meeting: "2025-06-06T10:00:00Z"

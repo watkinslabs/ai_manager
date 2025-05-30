@@ -1,0 +1,24 @@
+{
+  "analysis": {
+    "product_name": "Example Product",
+    "category": "Technology",
+    "strengths": [
+      "High quality build",
+      "Competitive pricing"
+    ],
+    "weaknesses": [
+      "Limited market presence",
+      "Outdated design"
+    ],
+    "opportunities": [
+      "Growing market demand",
+      "Partnership potential"
+    ],
+    "threats": [
+      "Strong competition",
+      "Economic uncertainty"
+    ],
+    "score": 7.5,
+    "recommendation": "Proceed with caution"
+  }
+}

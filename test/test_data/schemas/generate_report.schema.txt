@@ -1,0 +1,42 @@
+{
+  "report": {
+    "title": "Monthly Sales Report",
+    "type": "sales",
+    "period": "2025-05",
+    "summary": "Executive summary of findings",
+    "sections": [
+      {
+        "title": "Overview",
+        "content": "Section content here",
+        "charts": [
+          "revenue_chart",
+          "growth_chart"
+        ]
+      },
+      {
+        "title": "Key Metrics",
+        "content": "Metrics and analysis",
+        "charts": [
+          "performance_chart"
+        ]
+      }
+    ],
+    "metrics": {
+      "total_revenue": 125000,
+      "growth_rate": 15.5,
+      "customer_count": 450,
+      "avg_order_value": 277.78
+    },
+    "recommendations": [
+      "Increase marketing spend in Q2",
+      "Focus on customer retention programs"
+    ],
+    "next_actions": [
+      {
+        "action": "Review pricing strategy",
+        "owner": "Product Team",
+        "due_date": "2025-06-15"
+      }
+    ]
+  }
+}
