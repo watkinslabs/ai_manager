@@ -42,6 +42,10 @@ setup(
         "openai>=1.0.0",
         "soundfile>=0.12.0",
         "requests>=2.25.0",
+        "jsonschema",
+        "replicate",
+        "soundfile",
+        "pillow"
     ],
     extras_require={
         "dev": [

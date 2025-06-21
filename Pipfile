@@ -10,6 +10,7 @@ wl-version-manager = "*"
 soundfile = "*"
 openai = "*"
 jsonschema = "*"
+replicate = "*"
 
 [dev-packages]
 
